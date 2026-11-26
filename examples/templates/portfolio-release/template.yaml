@@ -1,0 +1,54 @@
+
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+
+metadata:
+  name: portfolio-release-template
+  title: Build, Publish and Deploy Portfolio
+  description: Trigger a complete portfolio release that builds, publishes, and deploys a versioned Docker image.
+  tags:
+    - docker
+    - github-actions
+    - deployment
+    - nextjs
+    - ci-cd
+
+spec:
+  owner: user:default/sellami1
+  type: service
+
+  parameters:
+    - title: Release Configuration
+      required:
+        - image_tag
+      properties:
+        image_tag:
+          title: Release Version
+          type: string
+          description: Version to build, publish, and deploy (semantic versioning).
+          default: "1.1.0"
+          pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+
+  steps:
+    - id: dispatch
+      name: Trigger Complete Portfolio Release
+      action: github:actions:dispatch
+      input:
+        repoUrl: github.com?owner=sellami1&repo=my-devops-portfolio
+        workflowId: release.yml
+        branchOrTagName: main
+        workflowInputs:
+          image_tag: ${{ parameters.image_tag }}
+
+  output:
+    text:
+      - title: Release Information
+        content: |
+          Docker Hub image:
+          kadhemsellami/my-devops-portfolio:${{ parameters.image_tag }}
+
+          Release workflow:
+          https://github.com/sellami1/my-devops-portfolio/actions/workflows/release.yml
+
+          Deployment URL:
+          http://localhost:3000

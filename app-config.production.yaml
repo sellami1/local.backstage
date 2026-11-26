@@ -1,0 +1,74 @@
+﻿app:
+  # Backstage frontend is served by the backend app plugin.
+  baseUrl: http://localhost:7007
+
+backend:
+  # Browser-facing backend URL.
+  baseUrl: http://localhost:7007
+
+  cors:
+    origin: http://localhost:7007
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+
+  # Listen on all interfaces inside the container.
+  listen: ':7007'
+
+  csp:
+    upgradeInsecureRequests: false
+
+  database:
+    client: pg
+    connection:
+      host: postgres
+      port: 5432
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      database: backstage
+
+auth:
+  environment: production
+  providers:
+    github:
+      production:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: userIdMatchingUserEntityAnnotation
+    guest: null
+
+catalog:
+  locations:
+    - type: file
+      target: ./examples/entities.yaml
+
+    - type: file
+      target: ./examples/template/template.yaml
+      rules:
+        - allow: [Template]
+
+    - type: file
+      target: ./examples/org.yaml
+      rules:
+        - allow: [User, Group]
+
+    - type: file
+      target: ./examples/templates/portfolio-nextjs/template.yaml
+      rules:
+        - allow: [Template]
+
+    - type: file
+      target: ./examples/templates/portfolio-docker-publish/template.yaml
+      rules:
+        - allow: [Template]
+
+    - type: file
+      target: ./examples/templates/portfolio-deploy/template.yaml
+      rules:
+        - allow: [Template]
+
+    - type: file
+      target: ./examples/templates/portfolio-release/template.yaml
+      rules:
+        - allow: [Template]

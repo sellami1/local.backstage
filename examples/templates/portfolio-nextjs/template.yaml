@@ -1,0 +1,91 @@
+
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+
+metadata:
+  name: portfolio-nextjs-template
+  title: Next.js Developer Portfolio
+  description: Generate a Next.js developer portfolio, publish it to GitHub, and register it in Backstage.
+  tags:
+    - nextjs
+    - portfolio
+    - typescript
+    - docker
+
+spec:
+  owner: user:default/sellami1
+  type: website
+
+  parameters:
+    - title: Portfolio Information
+      required:
+        - name
+        - description
+        - owner
+      properties:
+        name:
+          title: Project Name
+          type: string
+          description: Unique name for your portfolio
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+
+        description:
+          title: Portfolio Description
+          type: string
+          description: Short description of the portfolio
+          default: Personal developer portfolio built with Next.js
+
+        owner:
+          title: Owner
+          type: string
+          description: Backstage entity responsible for this portfolio
+          default: user:default/sellami1
+          ui:field: OwnerPicker
+
+    - title: GitHub Repository
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+  steps:
+    - id: fetch
+      name: Generate Next.js Portfolio
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        description: ${{ parameters.description }}
+        defaultBranch: main
+
+    - id: register
+      name: Register in Backstage Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+
+  output:
+    links:
+      - title: GitHub Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+
+      - title: Open in Backstage Catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}

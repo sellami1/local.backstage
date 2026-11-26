@@ -1,0 +1,51 @@
+
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+
+metadata:
+  name: portfolio-docker-publish-template
+  title: Build and Publish Portfolio Docker Image
+  description: Trigger the GitHub Actions workflow to build and publish a versioned portfolio Docker image to Docker Hub.
+  tags:
+    - docker
+    - github-actions
+    - nextjs
+    - deployment
+
+spec:
+  owner: user:default/sellami1
+  type: service
+
+  parameters:
+    - title: Docker Image Configuration
+      required:
+        - image_tag
+      properties:
+        image_tag:
+          title: Docker Image Version
+          type: string
+          description: Version tag to publish to Docker Hub
+          default: "1.0.0"
+          pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+
+  steps:
+    - id: dispatch
+      name: Trigger Docker Build and Publish
+      action: github:actions:dispatch
+      input:
+        repoUrl: github.com?owner=sellami1&repo=my-devops-portfolio
+        workflowId: docker-publish.yml
+        branchOrTagName: main
+        workflowInputs:
+          image_tag: ${{ parameters.image_tag }}
+
+  output:
+    text:
+      - title: Docker Image
+        content: |
+          Docker Hub repository:
+          kadhemsellami/my-devops-portfolio
+
+          Published tags:
+          ${{ parameters.image_tag }}
+          latest

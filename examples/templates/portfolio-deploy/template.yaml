@@ -1,0 +1,52 @@
+﻿apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+
+metadata:
+  name: portfolio-deploy-template
+  title: Deploy Portfolio Locally
+  description: Deploy a published Docker Hub portfolio image to the local Windows Docker Desktop environment.
+  tags:
+    - docker
+    - deployment
+    - github-actions
+    - nextjs
+
+spec:
+  owner: user:default/sellami1
+  type: service
+
+  parameters:
+    - title: Deployment Configuration
+      required:
+        - image_tag
+      properties:
+        image_tag:
+          title: Docker Image Version
+          type: string
+          description: Select the published Docker Hub image version to deploy.
+          default: "1.0.0"
+          pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+
+  steps:
+    - id: dispatch
+      name: Trigger Local Deployment
+      action: github:actions:dispatch
+      input:
+        repoUrl: github.com?owner=sellami1&repo=my-devops-portfolio
+        workflowId: deploy.yml
+        branchOrTagName: main
+        workflowInputs:
+          image_tag: ${{ parameters.image_tag }}
+
+  output:
+    text:
+      - title: Deployment Information
+        content: |
+          Docker Hub image:
+          kadhemsellami/my-devops-portfolio:${{ parameters.image_tag }}
+
+          Deployment target:
+          http://localhost:3000
+
+          GitHub Actions workflow:
+          https://github.com/sellami1/my-devops-portfolio/actions/workflows/deploy.yml
